@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+secretGenerator:
+- name: mysql-pass
+  literals:
+  - password=password
+
+resources:
+- ingress-controller.yaml
+- nginx1.yaml
+- ftps.yaml
+- mysql-deployment.yaml
+- wordpress-deployment.yaml
+- phpmyadmin.yaml
+- influxdb.yaml
+- grafana.yaml
+- telegraf.yaml
