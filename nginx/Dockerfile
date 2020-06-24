@@ -1,10 +1,37 @@
-FROM nginx:alpine
+FROM alpine
 
-RUN apk update && apk upgrade
+RUN apk update && apk upgrade && apk add nginx
 
 RUN apk add openssl
-	
-RUN openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/certificate.key -out /etc/nginx/certificate.pem -days 365 -subj '/C=FR/ST=Denial/L=Paris/O=42/CN=localhost' -nodes
+
+#-----------OPENRC------------------
+RUN apk add --no-cache openrc
+
+#-----------SSL--------------------
+
+# Timezone
+ENV TIMEZONE Europa/Madrid
+RUN	apk add tzdata && \
+	ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
+	echo "${TIMEZONE}" > /etc/timezone && \
+	mkdir /etc/nginx/certificates && \
+	openssl req \
+		-x509 \
+		-newkey rsa:2048 \
+		-keyout /etc/nginx/certificates/key.pem \
+		-out /etc/nginx/certificates/cert.pem \
+		-days 365 \
+		-nodes \
+		-subj /CN=localhost && \
+	#mkdir /www && \
+	apk del tzdata && \
+	rm -rf /var/cache/apk/*
+
+
+
+#RUN openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/certificate.key -out /etc/nginx/certificate.pem -days 365 -subj '/C=FR/ST=Denial/L=Paris/O=42/CN=localhost' -nodes
+
+#RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/certs/localhost.key -out /etc/ssl/certs/localhost.crt
 
 #---------- SSH ----------
 RUN apk add --no-cache openssh-server
@@ -23,18 +50,28 @@ RUN echo "root:root" | chpasswd
 #RUN chown sshuser:sshgroup $home/.ssh/authorized_keys && \
     #chmod 600 $home/.ssh/authorized_keys
 
+
+
+
 #---------- NGINX ----------
-COPY default.conf /etc/nginx/conf.d/default.conf
-# test
-COPY index.html /usr/share/nginx/html/index.html
+
+RUN mkdir -p /usr/share/nginx/html
+
+COPY index.html  /usr/share/nginx/html/
+
+RUN rm etc/nginx/conf.d/default.conf
+
+COPY default.conf etc/nginx/conf.d/
+
+RUN mkdir /run/nginx && touch /run/nginx/nginx.pid
 
 EXPOSE 80 443 22
 
-COPY start.sh /usr/local/bin/
-RUN chmod 700 /usr/local/bin/start.sh 
+ADD start.sh /start.sh
 
-ENTRYPOINT ["sh","/usr/local/bin/start.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+RUN chmod 755 start.sh
+
+ENTRYPOINT ["sh", "/start.sh"]
 
 #&& rm  -rf /tmp/* /var/cache/apk/*
 
