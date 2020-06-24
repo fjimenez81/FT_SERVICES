@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: fjimenez81/nginx-test1
+        image: fjimenez81/nginx-test3
       restartPolicy: Always
 ---
 apiVersion: v1
