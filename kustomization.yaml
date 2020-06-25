@@ -7,7 +7,7 @@ secretGenerator:
   - password=password
 
 resources:
-- ingress-controller.yaml
+#- ingress-controller.yaml
 - nginx1.yaml
 - ftps.yaml
 - mysql-deployment.yaml

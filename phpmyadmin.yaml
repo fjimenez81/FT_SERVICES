@@ -10,7 +10,7 @@ spec:
   selector:
     app: phpmyadmin
     tier: frontend
-  type: NodePort
+  type: LoadBalancer
 
 ---
 
